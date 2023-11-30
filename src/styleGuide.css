@@ -1,0 +1,40 @@
+:root {
+    --primarymain: rgba(111, 79, 248, 1);
+    --neutral-50: rgba(250, 250, 250, 1);
+    --neutral-800: rgba(47, 51, 76, 1);
+    --neutral-600: rgba(109, 112, 130, 1);
+    --infomain: rgba(79, 129, 238, 1);
+    --warningmain: rgba(240, 160, 0, 1);
+    --successmain: rgba(69, 135, 80, 1);
+    --neutral-0: rgba(255, 255, 255, 1);
+    --dangermain: rgba(219, 11, 0, 1);
+    --primaryhover: rgba(97, 74, 211, 1);
+    --infohover: rgba(67, 108, 199, 1);
+    --warninghover: rgba(189, 126, 0, 1);
+    --successhover: rgba(59, 114, 69, 1);
+    --neutral-200: rgba(211, 211, 211, 1);
+    --dangerhover: rgba(178, 9, 0, 1);
+    --primarypressed: rgba(59, 39, 159, 1);
+    --primaryborder: rgba(155, 135, 255, 1);
+    --infopressed: rgba(39, 64, 119, 1);
+    --warningpressed: rgba(122, 82, 0, 1);
+    --warningborder: rgba(255, 219, 148, 1);
+    --successpressed: rgba(48, 90, 55, 1);
+    --successborder: rgba(193, 215, 197, 1);
+    --neutral-300: rgba(182, 183, 192, 1);
+    --dangerpressed: rgba(107, 5, 0, 1);
+    --dangerborder: rgba(255, 163, 158, 1);
+    --subtitle-m-font-family: "Poppins-Medium", Helvetica;
+    --subtitle-m-font-weight: 500;
+    --subtitle-m-font-size: 16px;
+    --subtitle-m-letter-spacing: 0px;
+    --subtitle-m-line-height: 24px;
+    --subtitle-m-font-style: normal;
+    --subtitle-s-font-family: "Poppins-Medium", Helvetica;
+    --subtitle-s-font-weight: 500;
+    --subtitle-s-font-size: 14px;
+    --subtitle-s-letter-spacing: 0px;
+    --subtitle-s-line-height: 20px;
+    --subtitle-s-font-style: normal;
+  }
+  
