@@ -54,8 +54,7 @@ const SideNav = () => {
   };
   return (
     <>
-      <aside className="main-sidebar sidebar-dark-primary elevation-4">
-        {/* Brand Logo */}
+      {/* <aside className="main-sidebar sidebar-dark-primary elevation-4">
         <a href="index3.html" className="brand-link">
           <img
             src="dist/img/AdminLTELogo.png"
@@ -65,9 +64,7 @@ const SideNav = () => {
           />
           <span className="brand-text font-weight-light">AdminLTE 3</span>
         </a>
-        {/* Sidebar */}
         <div className="sidebar">
-          {/* Sidebar user panel (optional) */}
           <div className="user-panel mt-3 pb-3 mb-3 d-flex">
             <div className="image">
               <img
@@ -82,7 +79,6 @@ const SideNav = () => {
               </a>
             </div>
           </div>
-          {/* SidebarSearch Form */}
           <div className="form-inline">
             <div className="input-group" data-widget="sidebar-search">
               <input
@@ -98,7 +94,6 @@ const SideNav = () => {
               </div>
             </div>
           </div>
-          {/* Sidebar Menu */}
           <nav className="mt-2">
             <ul
               className="nav nav-pills nav-sidebar flex-column"
@@ -136,6 +131,83 @@ const SideNav = () => {
                 logo={store_inactive}
                 changeState={(section: string) => changeNavStatus(section)}
               />
+            </ul>
+          </nav>
+        </div>
+      </aside> */}
+      <aside className="main-sidebar sidebar-dark-primary elevation-4">
+        {/* Brand Logo */}
+        <a href="#" className="brand-link txt_center border-bottom-0">
+          <img src="dist/img/tilted_logo.png" alt="Tilted" />
+        </a>
+        {/* Sidebar */}
+        <div className="sidebar">
+          <div className="sidebar_drpdwn my-3">
+            <img
+              src="dist/img/qglobe_logo.png"
+              alt="QGlobe"
+              className="sidebar_img"
+            />
+            <select className="form-control">
+              <option>QGlobe Studio</option>
+            </select>
+          </div>
+          <div className="dropdown-divider mb-3" />
+          {/* Sidebar Menu */}
+          <nav className="mt-2">
+            <ul
+              className="nav nav-pills nav-sidebar flex-column"
+              data-widget="treeview"
+              role="menu"
+              data-accordion="false"
+            >
+              <li className="f_sz14 mb-3">Admin Panel</li>
+              <SidenavButton
+                buttonName="home"
+                isActive={navState["home"]}
+                logo={store_inactive}
+                changeState={(section: string) => changeNavStatus(section)}
+              />
+              <SidenavButton
+                buttonName="assets"
+                isActive={navState["assets"]}
+                logo={store_inactive}
+                changeState={(section: string) => changeNavStatus(section)}
+              />
+              <SidenavButton
+                buttonName="chat"
+                isActive={navState["chat"]}
+                logo={store_inactive}
+                changeState={(section: string) => changeNavStatus(section)}
+              />
+              <li className="nav-item">
+                <a href="#" className="nav-link">
+                  <span className="material-icons material-symbols-outlined md-18 mr-1">
+                    assignment
+                  </span>
+                  <p>Activity</p>
+                </a>
+              </li>
+              <li className="nav-item">
+                <a href="#" className="nav-link">
+                  <span className="material-icons md-18 mr-1">settings</span>
+                  <p>Settings</p>
+                </a>
+              </li>
+              <li>
+                <div className="dropdown-divider mb-3 mt-2" />
+              </li>
+              <li className="f_sz14 mb-3">Insight</li>
+              <li className="nav-item">
+                <a href="#" className="nav-link">
+                  <span className="material-icons material-symbols-outlined md-18 mr-1">
+                    grade
+                  </span>
+                  <p>
+                    Review <span className="right badge badge-danger">99+</span>
+                  </p>
+                </a>
+              </li>
             </ul>
           </nav>
           {/* /.sidebar-menu */}

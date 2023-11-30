@@ -35,13 +35,25 @@ const SidenavButton: React.FC<MyComponentProps> = ({
     //   }
     // </div>
     <>
-      <li className="nav-item" onClick={() => changeState(buttonName)}>
+      {/* <li className="nav-item" onClick={() => changeState(buttonName)}>
         <a className="nav-link">
           <i className="nav-icon fas fa-th" />
           <p>
             {capitalizedString(buttonName)}
             {notification && (
-              <span className="right badge badge-danger">New</span>
+              <span className="right badge badge-danger">99+</span>
+            )}
+          </p>
+        </a>
+      </li> */}
+
+      <li className="nav-item" onClick={() => changeState(buttonName)}>
+        <a className="nav-link">
+          <span className="material-icons md-18 mr-1">storefront</span>
+          <p>
+            {capitalizedString(buttonName)}{" "}
+            {notification && (
+              <span className="right badge badge-danger">99+</span>
             )}
           </p>
         </a>

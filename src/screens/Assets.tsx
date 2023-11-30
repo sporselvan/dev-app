@@ -1,16 +1,20 @@
 import React, { useState, ChangeEvent, FormEvent, DragEvent } from "react";
+import axios from "axios";
+import { API_URL } from "../helper/constants";
+import { useUser } from "../helper/userContext";
 
 const Assets: React.FC = () => {
+  const { userId } = useUser();
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [encodedImages, setEncodedImages] = useState<string[]>([]);
   const [selectedVideos, setSelectedVideos] = useState<File[]>([]);
   const [encodedVideos, setEncodedVideos] = useState<string[]>([]);
   const [productName, setProductName] = useState<string>("");
   const [productDescription, setProductDescription] = useState<string>("");
-  const [priceCategory, setpPriceCategory] = useState<string>("");
+  const [currencyType, setCurrencyType] = useState<string>("");
   const [priceValue, setPriceValue] = useState<string>("");
-  const [availableStock, setAvailableStock] = useState<string>("");
-  const [minimumOrder, setMinimumOrder] = useState<string>("");
+  const [availableStock, setAvailableStock] = useState<number>();
+  const [minimumOrder, setMinimumOrder] = useState<number>();
   const [videoLink, setVideoLink] = useState<string>("");
   const [productKeywords, setProductKeywords] = useState<string[]>([]);
   const [newKeyword, setNewKeyword] = useState<string>("");
@@ -19,6 +23,24 @@ const Assets: React.FC = () => {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [gameNames, setGameNames] = useState<string[]>([]);
   const [showPopup, setShowPopup] = useState(false);
+
+  const handleMinimumStockChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value, 10);
+
+    if (!isNaN(value)) {
+      // Update the state only if the input is a valid number
+      setAvailableStock(value);
+    }
+  };
+
+  const handleMinimumOrder = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(event.target.value, 10);
+
+    if (!isNaN(value)) {
+      // Update the state only if the input is a valid number
+      setMinimumOrder(value);
+    }
+  };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -29,7 +51,6 @@ const Assets: React.FC = () => {
     if (files) {
       const newImageArray = Array.from(files);
       const updatedSelectedImages = [...selectedImages, ...newImageArray];
-
       // Convert selected images to base64 and update the state
       const promisesImages = updatedSelectedImages.map((image) => {
         return new Promise<string>((resolve) => {
@@ -44,8 +65,8 @@ const Assets: React.FC = () => {
 
       Promise.all(promisesImages).then((base64Images) => {
         setEncodedImages(base64Images);
-        setSelectedImages(updatedSelectedImages);
       });
+      setSelectedImages(updatedSelectedImages);
     }
   };
 
@@ -144,70 +165,68 @@ const Assets: React.FC = () => {
     setGameNames(updatedGameNames);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Send the encoded images and videos to the API or perform other actions
-    console.log("Encoded Images:", encodedImages);
-    console.log("Encoded Videos:", encodedVideos);
+    // Create FormData object
+    const formData = new FormData();
 
-    fetch("https://dev-tilted.ephrontech.com/file/upload/multiple", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      // body: JSON.stringify({ images: encodedImages, videos: encodedVideos }),
-      body: JSON.stringify({ document: encodedImages }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        // sendUrlsToAnotherApi({
-        //   images: imageUrls,
-        //   // videos: videoUrls,
-        //   productName: productName,
-        //   productKeywords: productKeywords,
-        // });
-      })
-      .catch((error) => console.error("Error:", error));
+    // Append each selected image to the FormData object
+    selectedImages.forEach((image) => {
+      formData.append(`document`, image);
+    });
+
+    try {
+      // Send FormData to the API using Axios
+      const response = await axios.post(
+        `${API_URL}/file/upload/multiple`,
+        formData
+      );
+      setImageUrls(response.data.result);
+      // Handle the response data
+      console.log(response.data.result);
+      assetCreate(response.data.result);
+    } catch (error) {
+      // Handle errors
+      console.error("Error:", error);
+    }
   };
 
-  const sendUrlsToAnotherApi = (data: {
-    images: string[];
-    productName: string;
-    productKeywords: string[];
-  }) => {
-    // Replace this with your actual API endpoint and method
-    return fetch("https://example.com/api/another-endpoint", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    }).then((response) => response.json());
+  const assetCreate = async (ImageUrl: string | string[]) => {
+    // Replace this with your actual API endpoint
+    const apiUrl = `${API_URL}/product/create`;
+
+    // Data to be sent in the request body
+    const data = {
+      userId: userId,
+      productName: productName,
+      productCategory: assetCategory,
+      productKeywords: productKeywords,
+      productImages: ImageUrl,
+      productVideos: ["video1.mp4", "video2.mp4"],
+      price: priceValue,
+      currencyType: currencyType,
+      availableStock: availableStock,
+      minimumOrder: minimumOrder,
+      description: productDescription,
+      variation: gameNames,
+    };
+    console.log(`data:${data}`);
+    // Axios POST request
+    try {
+      const response = await axios.post(apiUrl, data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   };
   return (
     <>
       <div className="content-wrapper">
-        {/* Content Header (Page header) */}
-        <section className="content-header">
-          <div className="container-fluid">
-            <div className="row mb-2">
-              <div className="col-sm-6">
-                <h1>Assets</h1>
-              </div>
-              <div className="col-sm-6">
-                <ol className="breadcrumb float-sm-right">
-                  <li className="breadcrumb-item">
-                    <a href="#">Home</a>
-                  </li>
-                  <li className="breadcrumb-item active">Assets</li>
-                </ol>
-              </div>
-            </div>
-          </div>
-          {/* /.container-fluid */}
-        </section>
         <section className="content">
           <div className="container-fluid">
             <div className="row">
@@ -353,25 +372,27 @@ const Assets: React.FC = () => {
                         />
                       </div>
                       <div className="form-group">
-                        <label htmlFor="productName">Description:</label>
+                        <label htmlFor="productName">stock:</label>
                         <input
                           type="text"
                           id="availablestock"
                           name="availablestock"
                           className="form-control"
-                          value={availableStock}
-                          onChange={(e) => setAvailableStock(e.target.value)}
+                          value={
+                            availableStock !== undefined ? availableStock : ""
+                          }
+                          onChange={handleMinimumStockChange}
                         />
                       </div>
                       <div className="form-group">
-                        <label htmlFor="productName">Description:</label>
+                        <label htmlFor="productName">minimumorder:</label>
                         <input
                           type="text"
                           id="minimumorder"
                           name="minimumorder"
                           className="form-control"
-                          value={minimumOrder}
-                          onChange={(e) => setMinimumOrder(e.target.value)}
+                          value={minimumOrder !== undefined ? minimumOrder : ""}
+                          onChange={handleMinimumOrder}
                         />
                       </div>
                       <div className="form-group">
@@ -438,9 +459,10 @@ const Assets: React.FC = () => {
                           id="productKeyword"
                           name="productKeyword"
                           className="form-control"
-                          value={priceCategory}
-                          onChange={(e) => setpPriceCategory(e.target.value)}
+                          value={currencyType}
+                          onChange={(e) => setCurrencyType(e.target.value)}
                         >
+                          <option>Select Currency Type</option>
                           <option value="USD">USD</option>
                           <option value="UND">UND</option>
                           {/* Add more options as needed */}
@@ -500,6 +522,288 @@ const Assets: React.FC = () => {
             </div>
           </div>
         </section>
+      </div>
+
+      <div className="content-wrapper">
+        {/* Main content */}
+        <div className="content pt-3">
+          <div className="container-fluid">
+            <div className="row">
+              <div className="col-12 col-lg-12">
+                <div className="card">
+                  <div className="card-body">
+                    <div className="w-100 d-flex flex-row flex-wrap">
+                      <div className="col-12 col-md-8">
+                        <h5 className="card-title pt-2">Upload New Asset</h5>
+                      </div>
+                      <div className="col-12 col-md-4">
+                        <div className="txt_right mt-2 mt-md-0">
+                          <a className="btn btn-outline-primary">Draft</a>
+                          <a className="btn btn-primary">Upload Asset</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-12 col-lg-12">
+                <div className="card">
+                  <div className="card-body">
+                    <div className="col-12 col-md-6">
+                      <h5 className="card-title">Upload Files</h5>
+                      <div className="w-100 d-inline-block my-3">
+                        <div
+                          className="file-drop-area"
+                          onDrop={handleDrop}
+                          onDragOver={handleDragOver}
+                        >
+                          <div className="d-block w-100 text-center">
+                            <span className="material-icons material-symbols-outlined md-64 fgrey2">
+                              upload
+                            </span>{" "}
+                          </div>
+                          <span className="file-message mr-2">
+                            Drag &amp; Drop files here or
+                          </span>
+                          <span className="btn btn-primary">Browse</span>
+                          <input className="file-input" type="file" multiple />
+                        </div>
+                        <div className="w-100 d-flex flex-row flex-wrap pt-2">
+                          <div className="col-12 col-md-6">
+                            <span className="f_sz12">
+                              FBX, OBJ, DAE, BLEND, STL
+                            </span>
+                          </div>
+                          <div className="col-12 col-md-6">
+                            <a href="#">
+                              <div className="d-flex align-items-center float-right f_sz12 fpurple">
+                                <span className="material-icons material-symbols-outlined md-18 mr-1">
+                                  article
+                                </span>{" "}
+                                Guidelines
+                              </div>
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label>
+                          <span className="f_sz14">Files</span>
+                        </label>
+                        <div className="input-group mb-3">
+                          <input
+                            type="text"
+                            className="form-control border_radius4"
+                            defaultValue="name file.fbx"
+                          />
+                          <div className="input-group-append">
+                            <span className="input-group-text bgred cursor_pntr">
+                              <span className="material-icons material-symbols-outlined md-18 fred">
+                                close
+                              </span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="form-group mt-2">
+                        <label>Product Photo</label>
+                        <div className="flexdiv mt-2">
+                          <div className="prod_photo_item active">
+                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                              image
+                            </span>
+                          </div>
+                          <div className="prod_photo_item">
+                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                              image
+                            </span>
+                          </div>
+                          <div className="prod_photo_item error">
+                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                              image
+                            </span>
+                          </div>
+                          <div className="prod_photo_item">
+                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                              image
+                            </span>
+                          </div>
+                          <div className="prod_photo_item">
+                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                              image
+                            </span>
+                          </div>
+                          <div className="prod_photo_item">
+                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                              image
+                            </span>
+                          </div>
+                          <div className="prod_photo_item">
+                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                              image
+                            </span>
+                          </div>
+                          <div className="prod_photo_item">
+                            <div className="prod_photoimg">
+                              <img
+                                src="dist/img/sample.png"
+                                className="border_radius4"
+                              />
+                            </div>
+                            <div className="allclose">
+                              <span className="material-icons material-symbols-outlined md-16">
+                                close
+                              </span>
+                            </div>
+                          </div>
+                          <div className="prod_photo_item">
+                            <div className="prod_photoimg">
+                              <img
+                                src="dist/img/sample.png"
+                                className="border_radius4"
+                              />
+                            </div>
+                            <div className="allclose">
+                              <span className="material-icons material-symbols-outlined md-16">
+                                close
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="form-group">
+                        <label>
+                          Video <span className="fgrey2">(Optional)</span>
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="https://"
+                        />
+                        <div className="mt-2 position-relative">
+                          <span className="d-flex align-items-center fpurple">
+                            <span className="material-icons material-symbols-outlined md-18 mr-1">
+                              add
+                            </span>
+                            Add video
+                          </span>
+                          <input className="file-input" type="file" multiple />
+                        </div>
+                        <div className="flexdiv mt-2">
+                          <div className="prod_video_item">
+                            <div className="videoWrapper">
+                              <video width={400} controls>
+                                <source
+                                  src="https://www.w3schools.com/html/mov_bbb.mp4"
+                                  type="video/mp4"
+                                />
+                                <source
+                                  src="https://www.w3schools.com/html/mov_bbb.ogg"
+                                  type="video/ogg"
+                                />
+                                Your browser does not support HTML video.
+                              </video>
+                            </div>
+                            <div className="allclose">
+                              <span className="material-icons material-symbols-outlined md-16">
+                                close
+                              </span>
+                            </div>
+                          </div>
+                          <div className="prod_video_item">
+                            <div className="videoWrapper">
+                              <video width={400} controls>
+                                <source
+                                  src="https://www.w3schools.com/html/mov_bbb.mp4"
+                                  type="video/mp4"
+                                />
+                                <source
+                                  src="https://www.w3schools.com/html/mov_bbb.ogg"
+                                  type="video/ogg"
+                                />
+                                Your browser does not support HTML video.
+                              </video>
+                            </div>
+                            <div className="allclose">
+                              <span className="material-icons material-symbols-outlined md-16">
+                                close
+                              </span>
+                            </div>
+                          </div>
+                          <div className="prod_video_item">
+                            <div className="videoWrapper">
+                              <video width={400} controls>
+                                <source
+                                  src="https://www.w3schools.com/html/mov_bbb.mp4"
+                                  type="video/mp4"
+                                />
+                                <source
+                                  src="https://www.w3schools.com/html/mov_bbb.ogg"
+                                  type="video/ogg"
+                                />
+                                Your browser does not support HTML video.
+                              </video>
+                            </div>
+                            <div className="allclose">
+                              <span className="material-icons material-symbols-outlined md-16">
+                                close
+                              </span>
+                            </div>
+                          </div>
+                          <div className="prod_video_item">
+                            <div className="videoWrapper">
+                              <video width={400} controls>
+                                <source
+                                  src="https://www.w3schools.com/html/mov_bbb.mp4"
+                                  type="video/mp4"
+                                />
+                                <source
+                                  src="https://www.w3schools.com/html/mov_bbb.ogg"
+                                  type="video/ogg"
+                                />
+                                Your browser does not support HTML video.
+                              </video>
+                            </div>
+                            <div className="allclose">
+                              <span className="material-icons material-symbols-outlined md-16">
+                                close
+                              </span>
+                            </div>
+                          </div>
+                          <div className="prod_video_item">
+                            <div className="videoWrapper">
+                              <video width={400} controls>
+                                <source
+                                  src="https://www.w3schools.com/html/mov_bbb.mp4"
+                                  type="video/mp4"
+                                />
+                                <source
+                                  src="https://www.w3schools.com/html/mov_bbb.ogg"
+                                  type="video/ogg"
+                                />
+                                Your browser does not support HTML video.
+                              </video>
+                            </div>
+                            <div className="allclose">
+                              <span className="material-icons material-symbols-outlined md-16">
+                                close
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* /.row */}
+            </div>
+            {/* /.container-fluid */}
+          </div>
+          {/* /.content */}
+        </div>
       </div>
     </>
   );

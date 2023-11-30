@@ -10,6 +10,7 @@ import Settings from "./screens/Settings.tsx";
 import Review from "./screens/Review.tsx";
 import Comments from "./screens/Comments.tsx";
 import "./App.css";
+import { UserProvider } from "../src/helper/userContext.tsx";
 
 import {
   createBrowserRouter,
@@ -29,9 +30,10 @@ type MyComponentProps = {
 const WithSideBar: React.FC<MyComponentProps> = ({ Component }) => {
   return (
     <>
-      <SideNav />
-      <Navbar />
-      <Component />
+      <div className="wrapper">
+        <SideNav />
+        <Component />
+      </div>
     </>
   );
 };
@@ -53,6 +55,8 @@ const router = createBrowserRouter(
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <UserProvider>
+      <RouterProvider router={router} />
+    </UserProvider>
   </React.StrictMode>
 );
