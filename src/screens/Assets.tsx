@@ -51,22 +51,27 @@ const Assets: React.FC = () => {
     if (files) {
       const newImageArray = Array.from(files);
       const updatedSelectedImages = [...selectedImages, ...newImageArray];
-      // Convert selected images to base64 and update the state
-      const promisesImages = updatedSelectedImages.map((image) => {
-        return new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const result = reader.result as string;
-            resolve(result);
-          };
-          reader.readAsDataURL(image);
-        });
-      });
 
-      Promise.all(promisesImages).then((base64Images) => {
-        setEncodedImages(base64Images);
-      });
-      setSelectedImages(updatedSelectedImages);
+      if (updatedSelectedImages.length <= 6) {
+        const promisesImages = updatedSelectedImages.map((file) => {
+          return new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const result = reader.result as string;
+              resolve(result);
+            };
+            reader.readAsDataURL(file);
+          });
+        });
+
+        Promise.all(promisesImages).then((base64Images) => {
+          setEncodedImages(base64Images);
+        });
+
+        setSelectedImages(updatedSelectedImages);
+      } else {
+        alert("Please select only six images or fewer.");
+      }
     }
   };
 
@@ -165,25 +170,24 @@ const Assets: React.FC = () => {
     setGameNames(updatedGameNames);
   };
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    // Create FormData object
-    const formData = new FormData();
-
-    // Append each selected image to the FormData object
-    selectedImages.forEach((image) => {
-      formData.append(`document`, image);
-    });
-
+  const handleSubmit = async () => {
     try {
+      // Create FormData object
+      const formData = new FormData();
+
+      // Append each selected image to the FormData object
+      selectedImages.forEach((image) => {
+        formData.append(`document`, image);
+      });
+
       // Send FormData to the API using Axios
       const response = await axios.post(
         `${API_URL}/file/upload/multiple`,
         formData
       );
-      setImageUrls(response.data.result);
+
       // Handle the response data
+      setImageUrls(response.data.result);
       console.log(response.data.result);
       assetCreate(response.data.result);
     } catch (error) {
@@ -199,6 +203,7 @@ const Assets: React.FC = () => {
     // Data to be sent in the request body
     const data = {
       userId: userId,
+      productStatus: "live",
       productName: productName,
       productCategory: assetCategory,
       productKeywords: productKeywords,
@@ -227,304 +232,6 @@ const Assets: React.FC = () => {
   return (
     <>
       <div className="content-wrapper">
-        <section className="content">
-          <div className="container-fluid">
-            <div className="row">
-              <div className="col-md-12">
-                <div className="card card-primary">
-                  <div className="card-header">
-                    <h3 className="card-title">
-                      Quick Example <small>jQuery Validation</small>
-                    </h3>
-                  </div>
-                  {/* form start */}
-                  <form id="quickForm" onSubmit={handleSubmit}>
-                    <div className="card-body">
-                      {/* Choose Files field with drag-and-drop */}
-                      <div
-                        className="form-group"
-                        onDrop={handleDrop}
-                        onDragOver={handleDragOver}
-                        style={{
-                          border: "2px dashed #ccc",
-                          borderRadius: "5px",
-                          padding: "20px",
-                          textAlign: "center",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <label htmlFor="imageUpload">
-                          Choose Files or Drag and Drop
-                        </label>
-                        <input
-                          type="file"
-                          id="imageUpload"
-                          name="images"
-                          className="form-control"
-                          accept="image/*"
-                          multiple
-                          onChange={handleFileChange}
-                        />
-                      </div>
-
-                      {/* Display selected images */}
-                      <div className="form-group">
-                        <label>Selected Images:</label>
-                        <ul style={{ listStyle: "none", padding: 0 }}>
-                          {selectedImages.map((image, index) => (
-                            <li key={index} style={{ marginBottom: "10px" }}>
-                              <img
-                                src={encodedImages[index]}
-                                alt={`Selected Image ${index + 1}`}
-                                style={{
-                                  maxWidth: "100px",
-                                  maxHeight: "100px",
-                                  marginRight: "10px",
-                                }}
-                              />
-                              {image.name}
-                              <span
-                                style={{
-                                  cursor: "pointer",
-                                  marginLeft: "10px",
-                                  fontSize: "18px",
-                                }}
-                                onClick={() => handleRemoveImage(index)}
-                              >
-                                &#10006;
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="form-group">
-                        <input
-                          type="file"
-                          id="imageUpload"
-                          name="images"
-                          className="form-control"
-                          accept="video/*"
-                          multiple
-                          onChange={handleVideoChange}
-                        />
-                        <label>Selected Videos:</label>
-                        <ul style={{ listStyle: "none", padding: 0 }}>
-                          {selectedVideos.map((video, index) => (
-                            <li key={index} style={{ marginBottom: "10px" }}>
-                              <video
-                                src={encodedVideos[index]}
-                                // alt={`Selected Video ${index + 1}`}
-                                style={{
-                                  maxWidth: "100px",
-                                  maxHeight: "100px",
-                                  marginRight: "10px",
-                                }}
-                                controls
-                              />
-                              {video.name}
-                              <span
-                                style={{
-                                  cursor: "pointer",
-                                  marginLeft: "10px",
-                                  fontSize: "18px",
-                                }}
-                                onClick={() => handleRemoveVideo(index)}
-                              >
-                                &#10006;
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="productName">Title:</label>
-                        <input
-                          type="text"
-                          id="productName"
-                          name="productName"
-                          className="form-control"
-                          value={productName}
-                          onChange={(e) => setProductName(e.target.value)}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="productName">Video URL:</label>
-                        <input
-                          type="text"
-                          id="videolink"
-                          name="videolink"
-                          className="form-control"
-                          value={videoLink}
-                          onChange={(e) => setVideoLink(e.target.value)}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="productName">Description:</label>
-                        <input
-                          type="text"
-                          id="description"
-                          name="description"
-                          className="form-control"
-                          value={productDescription}
-                          onChange={(e) =>
-                            setProductDescription(e.target.value)
-                          }
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="productName">stock:</label>
-                        <input
-                          type="text"
-                          id="availablestock"
-                          name="availablestock"
-                          className="form-control"
-                          value={
-                            availableStock !== undefined ? availableStock : ""
-                          }
-                          onChange={handleMinimumStockChange}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="productName">minimumorder:</label>
-                        <input
-                          type="text"
-                          id="minimumorder"
-                          name="minimumorder"
-                          className="form-control"
-                          value={minimumOrder !== undefined ? minimumOrder : ""}
-                          onChange={handleMinimumOrder}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="productKeyword">Product Keyword:</label>
-                        <div className="input-group">
-                          <input
-                            type="text"
-                            id="productKeyword"
-                            name="productKeyword"
-                            className="form-control"
-                            value={newKeyword}
-                            onChange={(e) => setNewKeyword(e.target.value)}
-                          />
-                          <div className="input-group-append">
-                            <button
-                              type="button"
-                              className="btn btn-outline-secondary"
-                              onClick={handleAddKeyword}
-                            >
-                              Add
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      {/* Display selected keywords */}
-                      <div className="form-group">
-                        <label>Selected Keywords:</label>
-                        <ul style={{ listStyle: "none", padding: 0 }}>
-                          {productKeywords.map((keyword, index) => (
-                            <li key={index} style={{ marginBottom: "10px" }}>
-                              {keyword}
-                              <span
-                                style={{
-                                  cursor: "pointer",
-                                  marginLeft: "10px",
-                                  fontSize: "18px",
-                                }}
-                                onClick={() => handleRemoveKeyword(index)}
-                              >
-                                &#10006;
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="productKeyword">Asset category:</label>
-                        <select
-                          id="productKeyword"
-                          name="productKeyword"
-                          className="form-control"
-                          value={assetCategory}
-                          onChange={(e) => setAssetCategory(e.target.value)}
-                        >
-                          <option value="">Select a keyword</option>
-                          <option value="keyword1">Keyword 1</option>
-                          <option value="keyword2">Keyword 2</option>
-                          {/* Add more options as needed */}
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="productKeyword">Price category:</label>
-                        <select
-                          id="productKeyword"
-                          name="productKeyword"
-                          className="form-control"
-                          value={currencyType}
-                          onChange={(e) => setCurrencyType(e.target.value)}
-                        >
-                          <option>Select Currency Type</option>
-                          <option value="USD">USD</option>
-                          <option value="UND">UND</option>
-                          {/* Add more options as needed */}
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="productName">price:</label>
-                        <input
-                          type="text"
-                          id="pricevalue"
-                          name="pricevalue"
-                          className="form-control"
-                          value={priceValue}
-                          onChange={(e) => setPriceValue(e.target.value)}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="gameNames">Game Names:</label>
-                        <div>
-                          {/* Display selected game names */}
-                          {gameNames.map((game, index) => (
-                            <span key={index} className="selected-game">
-                              {game}
-                              <span
-                                className="remove-game"
-                                onClick={() => handleRemoveGame(index)}
-                              >
-                                &times;
-                              </span>
-                            </span>
-                          ))}
-                        </div>
-                        <button
-                          type="button"
-                          className="btn btn-primary"
-                          onClick={handleAddGameClick}
-                        >
-                          + Add Game Name
-                        </button>
-                      </div>
-                    </div>
-                    <div className="card-footer">
-                      <button type="submit" className="btn btn-primary">
-                        Submit
-                      </button>
-                    </div>
-                  </form>
-                  {showPopup && (
-                    <Popup
-                      onClose={handlePopupClose}
-                      onSelect={handleGameSelect}
-                    />
-                  )}
-                </div>
-              </div>
-              <div className="col-md-6"></div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <div className="content-wrapper">
         {/* Main content */}
         <div className="content pt-3">
           <div className="container-fluid">
@@ -539,7 +246,9 @@ const Assets: React.FC = () => {
                       <div className="col-12 col-md-4">
                         <div className="txt_right mt-2 mt-md-0">
                           <a className="btn btn-outline-primary">Draft</a>
-                          <a className="btn btn-primary">Upload Asset</a>
+                          <a className="btn btn-primary" onClick={handleSubmit}>
+                            Upload Asset
+                          </a>
                         </div>
                       </div>
                     </div>
@@ -550,7 +259,7 @@ const Assets: React.FC = () => {
             <div className="row">
               <div className="col-12 col-lg-12">
                 <div className="card">
-                  <div className="card-body">
+                  <div className="card-body flexdiv">
                     <div className="col-12 col-md-6">
                       <h5 className="card-title">Upload Files</h5>
                       <div className="w-100 d-inline-block my-3">
@@ -568,7 +277,12 @@ const Assets: React.FC = () => {
                             Drag &amp; Drop files here or
                           </span>
                           <span className="btn btn-primary">Browse</span>
-                          <input className="file-input" type="file" multiple />
+                          <input
+                            className="file-input"
+                            type="file"
+                            multiple
+                            onChange={handleFileChange}
+                          />
                         </div>
                         <div className="w-100 d-flex flex-row flex-wrap pt-2">
                           <div className="col-12 col-md-6">
@@ -592,85 +306,188 @@ const Assets: React.FC = () => {
                         <label>
                           <span className="f_sz14">Files</span>
                         </label>
-                        <div className="input-group mb-3">
-                          <input
-                            type="text"
-                            className="form-control border_radius4"
-                            defaultValue="name file.fbx"
-                          />
-                          <div className="input-group-append">
-                            <span className="input-group-text bgred cursor_pntr">
-                              <span className="material-icons material-symbols-outlined md-18 fred">
-                                close
-                              </span>
-                            </span>
-                          </div>
-                        </div>
+                        {selectedImages.map((file, index) => (
+                          <>
+                            {![".jpg", ".jpeg", ".png", ".gif"].some((imgExt) =>
+                              file.name.toLowerCase().endsWith(imgExt)
+                            ) && (
+                              <div className="input-group mb-3" key={index}>
+                                <input
+                                  type="text"
+                                  className="form-control border_radius4"
+                                  defaultValue={file.name}
+                                  value={file.name}
+                                />
+                                <div className="input-group-append">
+                                  <span className="input-group-text bgred cursor_pntr">
+                                    <span
+                                      className="material-icons material-symbols-outlined md-18 fred"
+                                      onClick={() => handleRemoveImage(index)}
+                                    >
+                                      close
+                                    </span>
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        ))}
                       </div>
                       <div className="form-group mt-2">
                         <label>Product Photo</label>
                         <div className="flexdiv mt-2">
-                          <div className="prod_photo_item active">
-                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
-                              image
-                            </span>
-                          </div>
-                          <div className="prod_photo_item">
-                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
-                              image
-                            </span>
-                          </div>
-                          <div className="prod_photo_item error">
-                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
-                              image
-                            </span>
-                          </div>
-                          <div className="prod_photo_item">
-                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
-                              image
-                            </span>
-                          </div>
-                          <div className="prod_photo_item">
-                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
-                              image
-                            </span>
-                          </div>
-                          <div className="prod_photo_item">
-                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
-                              image
-                            </span>
-                          </div>
-                          <div className="prod_photo_item">
-                            <span className="material-icons material-symbols-outlined md-24 fgrey2">
-                              image
-                            </span>
-                          </div>
-                          <div className="prod_photo_item">
-                            <div className="prod_photoimg">
-                              <img
-                                src="dist/img/sample.png"
-                                className="border_radius4"
-                              />
-                            </div>
-                            <div className="allclose">
-                              <span className="material-icons material-symbols-outlined md-16">
-                                close
-                              </span>
-                            </div>
-                          </div>
-                          <div className="prod_photo_item">
-                            <div className="prod_photoimg">
-                              <img
-                                src="dist/img/sample.png"
-                                className="border_radius4"
-                              />
-                            </div>
-                            <div className="allclose">
-                              <span className="material-icons material-symbols-outlined md-16">
-                                close
-                              </span>
-                            </div>
-                          </div>
+                          {selectedImages.map((file, index) => (
+                            <>
+                              {(file.type === "image/jpeg" ||
+                                file.type === "image/png") && (
+                                <div className="prod_photo_item" key={index}>
+                                  <div className="prod_photoimg">
+                                    <img
+                                      src={encodedImages[index]}
+                                      className="border_radius4"
+                                    />
+                                  </div>
+                                  <div className="allclose">
+                                    <span
+                                      className="material-icons material-symbols-outlined md-16"
+                                      onClick={() => handleRemoveImage(index)}
+                                    >
+                                      close
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          ))}
+                          {selectedImages.length == 0 && (
+                            <>
+                              <div className="prod_photo_item active">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                            </>
+                          )}
+                          {selectedImages.length == 1 && (
+                            <>
+                              <div className="prod_photo_item active">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                            </>
+                          )}
+                          {selectedImages.length == 2 && (
+                            <>
+                              <div className="prod_photo_item active">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                            </>
+                          )}
+                          {selectedImages.length == 3 && (
+                            <>
+                              <div className="prod_photo_item active">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                            </>
+                          )}
+                          {selectedImages.length == 4 && (
+                            <>
+                              <div className="prod_photo_item active">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                              <div className="prod_photo_item">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                            </>
+                          )}
+                          {selectedImages.length == 5 && (
+                            <>
+                              <div className="prod_photo_item active">
+                                <span className="material-icons material-symbols-outlined md-24 fgrey2">
+                                  image
+                                </span>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                       <div className="form-group">
@@ -795,14 +612,229 @@ const Assets: React.FC = () => {
                         </div>
                       </div>
                     </div>
+                    <div className="col-12 col-md-6">
+                      <h5 className="card-title">Details</h5>
+                      <div className="inlineblockdiv pt-3">
+                        <div className="border-bottom pb-2">
+                          Status: {userId}
+                        </div>
+                        <div className="form-group mt-3">
+                          <label>Title</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Title File"
+                            value={productName}
+                            onChange={(e) => setProductName(e.target.value)}
+                          />
+                        </div>
+                        <div className="form-group mt-3">
+                          <label>Description</label>
+                          <textarea
+                            className="form-control txtarea_resizenone textarea_hgt110"
+                            value={productDescription}
+                            onChange={(e) =>
+                              setProductDescription(e.target.value)
+                            }
+                          />
+                        </div>
+                        <div className="form-group mt-4">
+                          <label>Asset Category</label>
+                          <select
+                            className="form-control"
+                            value={assetCategory}
+                            onChange={(e) => setAssetCategory(e.target.value)}
+                          >
+                            <option>Asset Category</option>
+                            <option>option 2</option>
+                            <option>option 3</option>
+                            <option>option 4</option>
+                            <option>option 5</option>
+                          </select>
+                        </div>
+                        <div className="form-group mt-4">
+                          <label>Product Keyword</label>
+                          <div className="flexdiv">
+                            <div className="col-10 col-md-11 pl-0">
+                              <div className="dropdown">
+                                <div
+                                  className="input-group mb-3 position-relative"
+                                  data-toggle="dropdown"
+                                >
+                                  <div className="input-group-prepend">
+                                    <span className="input-group-text bggrey">
+                                      <span className="material-icons material-symbols-outlined md-18 fwhite">
+                                        search
+                                      </span>
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="product keyword"
+                                    value={newKeyword}
+                                    onChange={(e) =>
+                                      setNewKeyword(e.target.value)
+                                    }
+                                  />
+                                </div>
+                                <div className="dropdown-menu dropdown-menu-fullwidth dropdown-menu-right">
+                                  <div className="dropdown-item">Keyword 1</div>
+                                  <div className="dropdown-item">Keyword 2</div>
+                                  <div className="dropdown-item">Keyword 3</div>
+                                </div>
+                              </div>
+                              <div className="fgrey3">
+                                These keywords will help shoppers find this
+                                asset.
+                              </div>
+                            </div>
+                            <div className="col-2 col-md-1">
+                              <a
+                                className="btn btn-light py-2"
+                                onClick={handleAddKeyword}
+                              >
+                                Add
+                              </a>
+                            </div>
+                          </div>
+                          <div className="flexdiv">
+                            {productKeywords.map((keyword, index) => (
+                              <div
+                                className="keyword_item border_radius8"
+                                key={index}
+                              >
+                                <span className="px-2">{keyword}</span>{" "}
+                                <span
+                                  className="close_sm bgred border_radius8_rgt cursor_pntr"
+                                  onClick={() => handleRemoveKeyword(index)}
+                                >
+                                  <span className="material-icons material-symbols-outlined md-16 pt-1 fred">
+                                    close
+                                  </span>
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="form-group mt-4">
+                          <label>Game</label>
+                          <div className="flexdiv">
+                            <div
+                              className="inlineblockdiv dropdown"
+                              onClick={handleAddGameClick}
+                            >
+                              <div className="flexdiv" data-toggle="dropdown">
+                                <span className="d-flex align-items-center fpurple cursor_pntr">
+                                  <span className="material-icons material-symbols-outlined md-18 mr-1">
+                                    add
+                                  </span>
+                                  Add game
+                                </span>
+                              </div>
+                              {showPopup && (
+                                <div className="dropdown-menu dropdown-menu-fullwidth dropdown-menu-right">
+                                  <div
+                                    className="dropdown-item"
+                                    onClick={() => handleGameSelect("Game 1")}
+                                  >
+                                    Game 1
+                                  </div>
+                                  <div
+                                    className="dropdown-item"
+                                    onClick={() => handleGameSelect("Game 2")}
+                                  >
+                                    Game 2
+                                  </div>
+                                  <div
+                                    className="dropdown-item"
+                                    onClick={() => handleGameSelect("Game 3")}
+                                  >
+                                    Game 3
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <div className="fgrey3 py-2">
+                              Select your asset and game compatibility
+                            </div>
+                          </div>
+                          <div className="flexdiv">
+                            {gameNames.map((game, index) => (
+                              <div
+                                className="keyword_item border_radius8"
+                                key={index}
+                              >
+                                <span className="px-2">{game}</span>{" "}
+                                <span
+                                  className="close_sm bgred border_radius8_rgt cursor_pntr"
+                                  onClick={() => handleRemoveGame(index)}
+                                >
+                                  <span className="material-icons material-symbols-outlined md-16 pt-1 fred">
+                                    close
+                                  </span>
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="form-group mt-4">
+                          <label>Price</label>
+                          <div className="flexdiv">
+                            <div className="col-3 col-md-2 pl-0">
+                              <select
+                                className="form-control"
+                                value={currencyType}
+                                onChange={(e) =>
+                                  setCurrencyType(e.target.value)
+                                }
+                              >
+                                <option defaultValue="USD">USD</option>
+                                <option value="UND">UND</option>
+                              </select>
+                            </div>
+                            <div className="col-9 col-md-10 pr-0">
+                              <input
+                                type="text"
+                                className="form-control"
+                                value={priceValue}
+                                onChange={(e) => setPriceValue(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="f_sz16 mt-2">Stock</div>
+                        <div className="form-group mt-2">
+                          <label>Available Stock</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder={"1"}
+                            value={
+                              availableStock !== undefined ? availableStock : ""
+                            }
+                            onChange={handleMinimumStockChange}
+                          />
+                        </div>
+                        <div className="form-group mt-2">
+                          <label>Minimum Order</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder={"1"}
+                            value={
+                              minimumOrder !== undefined ? minimumOrder : ""
+                            }
+                            onChange={handleMinimumOrder}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              {/* /.row */}
             </div>
-            {/* /.container-fluid */}
           </div>
-          {/* /.content */}
         </div>
       </div>
     </>
@@ -819,14 +851,16 @@ const Popup: React.FC<PopupProps> = ({ onClose, onSelect }) => {
   // ...
 
   return (
-    <div className="popup">
-      {/* Popup content */}
-
-      <ul>
-        <li onClick={() => onSelect("Game 1")}>Game 1</li>
-        <li onClick={() => onSelect("Game 2")}>Game 2</li>
-      </ul>
-      <button onClick={onClose}>Close</button>
+    <div className="dropdown-menu dropdown-menu-fullwidth dropdown-menu-right">
+      <div className="dropdown-item" onClick={() => onSelect("Game 1")}>
+        Game 1
+      </div>
+      <div className="dropdown-item" onClick={() => onSelect("Game 2")}>
+        Game 2
+      </div>
+      <div className="dropdown-item" onClick={() => onSelect("Game 3")}>
+        Game 3
+      </div>
     </div>
   );
 };

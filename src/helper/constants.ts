@@ -1,1 +1,1 @@
-export const API_URL = 'https://tilted-api.ephrontech.com';
+export const API_URL = 'https://dev-tilted.ephrontech.com';
