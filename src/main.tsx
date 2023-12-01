@@ -19,8 +19,6 @@ import {
   Route,
 } from "react-router-dom";
 import SideNav from "./components/SideNav.tsx";
-import { colorCodes } from "./helper/contant.ts";
-import Navbar from "./components/Navbar.tsx";
 
 type MyComponentProps = {
   // Define your props here

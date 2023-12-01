@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import store_inactive from "../assets/icons/store_inactive.svg";
 import { useNavigate } from "react-router-dom";
 import SidenavButton from "./SidenavButton";

@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, FormEvent, DragEvent } from "react";
+import React, { useState, ChangeEvent, DragEvent } from "react";
 import axios from "axios";
 import { API_URL } from "../helper/constants";
 import { useUser } from "../helper/userContext";
@@ -15,12 +15,12 @@ const Assets: React.FC = () => {
   const [priceValue, setPriceValue] = useState<string>("");
   const [availableStock, setAvailableStock] = useState<number>();
   const [minimumOrder, setMinimumOrder] = useState<number>();
-  const [videoLink, setVideoLink] = useState<string>("");
+  // const [videoLink, setVideoLink] = useState<string>("");
   const [productKeywords, setProductKeywords] = useState<string[]>([]);
   const [newKeyword, setNewKeyword] = useState<string>("");
   const [assetCategory, setAssetCategory] = useState<string>("");
-  const [videoUrls, setVideoUrls] = useState<string[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  // const [videoUrls, setVideoUrls] = useState<string[]>([]);
+  // const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [gameNames, setGameNames] = useState<string[]>([]);
   const [showPopup, setShowPopup] = useState(false);
 
@@ -75,10 +75,10 @@ const Assets: React.FC = () => {
     }
   };
 
-  const handleVideoChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    handleVideoFiles(files);
-  };
+  // const handleVideoChange = (event: ChangeEvent<HTMLInputElement>) => {
+  //   const files = event.target.files;
+  //   handleVideoFiles(files);
+  // };
 
   const handleVideoFiles = (files: FileList | null) => {
     if (files) {
@@ -126,16 +126,16 @@ const Assets: React.FC = () => {
     setEncodedImages(updatedEncodedImages);
   };
 
-  const handleRemoveVideo = (index: number) => {
-    const updatedSelectedVideos = [...selectedVideos];
-    const updatedEncodedVideos = [...encodedVideos];
+  // const handleRemoveVideo = (index: number) => {
+  //   const updatedSelectedVideos = [...selectedVideos];
+  //   const updatedEncodedVideos = [...encodedVideos];
 
-    updatedSelectedVideos.splice(index, 1);
-    updatedEncodedVideos.splice(index, 1);
+  //   updatedSelectedVideos.splice(index, 1);
+  //   updatedEncodedVideos.splice(index, 1);
 
-    setSelectedVideos(updatedSelectedVideos);
-    setEncodedVideos(updatedEncodedVideos);
-  };
+  //   setSelectedVideos(updatedSelectedVideos);
+  //   setEncodedVideos(updatedEncodedVideos);
+  // };
 
   const handleAddKeyword = () => {
     if (newKeyword.trim() !== "") {
@@ -154,9 +154,9 @@ const Assets: React.FC = () => {
     setShowPopup(true);
   };
 
-  const handlePopupClose = () => {
-    setShowPopup(false);
-  };
+  // const handlePopupClose = () => {
+  //   setShowPopup(false);
+  // };
 
   const handleGameSelect = (selectedGame: string) => {
     // Add the selected game to the list
@@ -187,7 +187,7 @@ const Assets: React.FC = () => {
       );
 
       // Handle the response data
-      setImageUrls(response.data.result);
+      // setImageUrls(response.data.result);
       console.log(response.data.result);
       assetCreate(response.data.result);
     } catch (error) {

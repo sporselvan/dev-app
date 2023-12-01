@@ -14,9 +14,9 @@ const capitalizedString = (text: string) =>
   text.charAt(0).toUpperCase() + text.slice(1);
 
 const SidenavButton: React.FC<MyComponentProps> = ({
-  logo,
+  // logo,
   buttonName,
-  isActive,
+  // isActive,
   notification = "",
   changeState,
 }) => {
